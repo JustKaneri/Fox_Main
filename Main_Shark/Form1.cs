@@ -86,8 +86,8 @@ namespace Main_Shark
                 bf.Serialize(ms, inf);
                 ms.Flush();
                 return ms.ToArray();
-            }   
-           
+            }
+
         }
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace Main_Shark
                 pb.SizeMode = PictureBoxSizeMode.StretchImage;
                 pb.Size = new Size(240, 130);
                 pb.Image = Properties.Resources.NotSignal;
-               // pb.BorderStyle = BorderStyle.Fixed3D;
+                // pb.BorderStyle = BorderStyle.Fixed3D;
                 pb.Location = new Point(5, 35);
                 panel.Controls.Add(pb);
                 Lstpbx.Add(pb);
@@ -232,7 +232,7 @@ namespace Main_Shark
                 btnEnd.FlatStyle = FlatStyle.Flat;
 
                 btnEnd.Location = new Point(265, 95);
-                btnEnd.Size = new Size(150,50);
+                btnEnd.Size = new Size(150, 50);
                 btnEnd.ForeColor = Color.White;
                 btnEnd.Tag = i;
                 btnEnd.Font = new Font("Calibri", 12);
@@ -255,8 +255,8 @@ namespace Main_Shark
         private void BtnEnd_Click(object sender, EventArgs e)
         {
             int index = (int)(sender as Button).Tag;
-            if(clients[index]!= null)
-            Lstpbx[index].Image = Properties.Resources.HaveSignal;
+            if (clients[index] != null)
+                Lstpbx[index].Image = Properties.Resources.HaveSignal;
             IsWork[index] = false;
         }
 
@@ -268,12 +268,12 @@ namespace Main_Shark
         private void Btn_Click(object sender, EventArgs e)
         {
             int index = (int)(sender as Button).Tag;
-            if(clients[index]!= null)
+            if (clients[index] != null)
             {
                 IsWork[index] = true;
                 Lstpbx[index].Image = Properties.Resources.Translate;
             }
-            
+
         }
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace Main_Shark
         private void GetUsers()
         {
             IPAddress iP = IPAddress.Parse(IpAdress);
-            server = new TcpListener(iP,Port);
+            server = new TcpListener(iP, Port);
             server.Start();
 
             TcpClient client = server.AcceptTcpClient();
@@ -298,7 +298,7 @@ namespace Main_Shark
                 }
             }
 
-            if(threadSends == null)
+            if (threadSends == null)
             {
                 threadSends = new Thread(SendMessage);
                 threadSends.Start();
@@ -311,54 +311,40 @@ namespace Main_Shark
         /// </summary>
         private void SendMessage()
         {
-            try
+            while (true)
             {
-                while (true)
+
+                for (int i = 0; i < clients.Length; i++)
                 {
-
-                    for (int i = 0; i < clients.Length; i++)
+                    if (clients[i] != null)
                     {
-                        if(clients[i] != null)
+                        Info inf = new Info();
+
+                        if (IsWork[i])
                         {
-                            Info inf = new Info();
 
-                            if (IsWork[i])
-                            {
-                                
-                                inf.Command = "Start";
-                                //creen = CaptureScreen.GetDesktopImage();
-                                inf.Screen = Image.FromStream(CreateSreen());
-                            }
-                            else
-                            {
-                                
-                                inf.Command = "Stop";
-                            }
+                            inf.Command = "Start";
+                            //creen = CaptureScreen.GetDesktopImage();
+                            inf.Screen = Image.FromStream(CreateSreen());
+                        }
+                        else
+                        {
 
-                            byte[] byff = InfoToByte(inf);
-
-                            NetworkStream stream = clients[i].GetStream();
-
-                            stream.Write(byff, 0, byff.Length);
-                            
+                            inf.Command = "Stop";
                         }
 
+                        byte[] byff = InfoToByte(inf);
+
+                        NetworkStream stream = clients[i].GetStream();
+
+                        stream.Write(byff, 0, byff.Length);
+
                     }
-                    Thread.Sleep(30);
+
                 }
+                Thread.Sleep(30);
             }
-            catch(Exception e)
-            {
-                MessageBox.Show(e.ToString());
-            }
-            finally
-            {
-                for (int j = 0; j < clients.Length; j++)
-                {
-                    if (clients[j] != null)
-                        clients[j].Close();
-                }
-            }
+
         }
 
         /// <summary>
