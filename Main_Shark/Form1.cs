@@ -15,7 +15,7 @@ using System.Threading;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Drawing.Imaging;
-using DLL_Screen;
+
 
 namespace Main_Shark
 {
@@ -102,31 +102,31 @@ namespace Main_Shark
             Icon cursor = Icon.FromHandle(Cursors.Default.Handle);
             gr.DrawIcon(cursor, new Rectangle(Cursor.Position, cursor.Size));
 
-            //using (MemoryStream ms = new MemoryStream())
-            //{
-            //    using (Bitmap bmp = creen)
-            //    {
-            //        bmp.Save(ms, ImageCodecInfo.GetImageEncoders()[1],
-            //        new EncoderParameters()
-            //        {
-            //            Param = new EncoderParameter[]
-            //            {
-            //                new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L - 30)
-            //            }
-            //        });
-            //    }
-
-            //    return ms;
-            //}
-
-
             MemoryStream ms = new MemoryStream();
 
-            creen.Save(ms, ImageFormat.Jpeg);
-
-            ms.Position = 0;
+            using (Bitmap bmp = creen)
+            {
+                bmp.Save(ms, ImageCodecInfo.GetImageEncoders()[1],
+                new EncoderParameters()
+                {
+                    Param = new EncoderParameter[]
+                    {
+                            new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L - 45)
+                    }
+                });
+            }
 
             return ms;
+
+
+
+            //MemoryStream ms = new MemoryStream();
+
+            //creen.Save(ms, ImageFormat.Jpeg);
+
+            //ms.Position = 0;
+
+            //return ms;
         }
 
         /// <summary>
@@ -256,8 +256,11 @@ namespace Main_Shark
         {
             int index = (int)(sender as Button).Tag;
             if (clients[index] != null)
+            {
                 Lstpbx[index].Image = Properties.Resources.HaveSignal;
-            IsWork[index] = false;
+                IsWork[index] = false;
+            }
+                
         }
 
         /// <summary>
@@ -285,23 +288,29 @@ namespace Main_Shark
             server = new TcpListener(iP, Port);
             server.Start();
 
-            TcpClient client = server.AcceptTcpClient();
-            string ConnectClient = Convert.ToString(((System.Net.IPEndPoint)client.Client.RemoteEndPoint).Address);
-
-            for (int i = 0; i < ipUser.Length; i++)
+            while (true)
             {
-                if (ConnectClient == ipUser[i])
+
+                TcpClient client = server.AcceptTcpClient();
+                string ConnectClient = Convert.ToString(((System.Net.IPEndPoint)client.Client.RemoteEndPoint).Address);
+
+                for (int i = 0; i < ipUser.Length; i++)
                 {
+                    if (ConnectClient == ipUser[i])
+                    {
 
-                    clients[i] = client;
-                    Lstpbx[i].Image = Properties.Resources.HaveSignal;
+                        clients[i] = client;
+                        Lstpbx[i].Image = Properties.Resources.HaveSignal;
+                    }
                 }
-            }
 
-            if (threadSends == null)
-            {
-                threadSends = new Thread(SendMessage);
-                threadSends.Start();
+                if (threadSends == null)
+                {
+                    threadSends = new Thread(SendMessage);
+                    threadSends.Start();
+                }
+
+                Thread.Sleep(1100);
             }
 
         }
@@ -311,38 +320,54 @@ namespace Main_Shark
         /// </summary>
         private void SendMessage()
         {
+            NetworkStream stream = null;
             while (true)
             {
-
                 for (int i = 0; i < clients.Length; i++)
                 {
                     if (clients[i] != null)
                     {
-                        Info inf = new Info();
-
-                        if (IsWork[i])
+                        try
                         {
+                            Info inf = new Info();
 
-                            inf.Command = "Start";
-                            //creen = CaptureScreen.GetDesktopImage();
-                            inf.Screen = Image.FromStream(CreateSreen());
+                            if (IsWork[i])
+                            {
+
+                                inf.Command = "Start";
+                                inf.Screen = Image.FromStream(CreateSreen());
+                            }
+                            else
+                            {
+                                inf.Command = "Stop";
+
+                            }
+
+                            byte[] byff = InfoToByte(inf);
+
+                            stream = clients[i].GetStream();
+
+                            stream.Write(byff, 0, byff.Length);
+
+                            Invoke(new MethodInvoker(delegate
+                            {
+                                LbxStatus.Text = byff.Length / 1024.0 + " Кб";
+                            }));
                         }
-                        else
+                        catch
                         {
-
-                            inf.Command = "Stop";
+                            Lstpbx[i].Image = Properties.Resources.NotSignal;
+                            clients[i].Close();
+                            stream?.Close();
+                            clients[i] = null;
+                            IsWork[i] = false;
                         }
 
-                        byte[] byff = InfoToByte(inf);
-
-                        NetworkStream stream = clients[i].GetStream();
-
-                        stream.Write(byff, 0, byff.Length);
 
                     }
 
                 }
-                Thread.Sleep(30);
+                Thread.Sleep(33);
             }
 
         }

@@ -36,7 +36,10 @@
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TsmProperty = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.LbxStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -91,7 +94,7 @@
             // TsmProperty
             // 
             this.TsmProperty.Name = "TsmProperty";
-            this.TsmProperty.Size = new System.Drawing.Size(216, 28);
+            this.TsmProperty.Size = new System.Drawing.Size(177, 28);
             this.TsmProperty.Text = "Настройки";
             this.TsmProperty.Click += new System.EventHandler(this.TsmProperty_Click);
             // 
@@ -102,6 +105,22 @@
             this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(138, 28);
             this.оПрограммеToolStripMenuItem.Text = "О программе";
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.LbxStatus});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 654);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1275, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // LbxStatus
+            // 
+            this.LbxStatus.Name = "LbxStatus";
+            this.LbxStatus.Size = new System.Drawing.Size(0, 17);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
@@ -109,6 +128,7 @@
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(97)))), ((int)(((byte)(118)))));
             this.ClientSize = new System.Drawing.Size(1275, 676);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -121,6 +141,8 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -135,6 +157,8 @@
         private System.Windows.Forms.ToolStripMenuItem функцииToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem BtnOnAll;
         private System.Windows.Forms.ToolStripMenuItem BtnOffAll;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel LbxStatus;
     }
 }
 
