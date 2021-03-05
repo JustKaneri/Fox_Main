@@ -333,14 +333,12 @@ namespace Main_Shark
 
                             if (IsWork[i])
                             {
-
                                 inf.Command = "Start";
                                 inf.Screen = Image.FromStream(CreateSreen());
                             }
                             else
                             {
                                 inf.Command = "Stop";
-
                             }
 
                             byte[] byff = InfoToByte(inf);

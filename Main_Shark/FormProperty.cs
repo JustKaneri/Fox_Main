@@ -101,7 +101,7 @@ namespace Main_Shark
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            if(TbxIpUser.Text == "" || !IsCorrectIp(TbxIpUser.Text))
+            if(TbxIpUser.Text == "" || !IsCorrectIp(TbxIpUser.Text ) || cnt != 4)
             {
                 MessageBox.Show("Не корректный ip адрес.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
