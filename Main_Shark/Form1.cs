@@ -102,23 +102,24 @@ namespace Main_Shark
             Icon cursor = Icon.FromHandle(Cursors.Default.Handle);
             gr.DrawIcon(cursor, new Rectangle(Cursor.Position, cursor.Size));
 
+            //using (Bitmap bmp = creen)
+            //{
+            //    bmp.Save(ms, ImageCodecInfo.GetImageEncoders()[1],
+            //    new EncoderParameters()
+            //    {
+            //        Param = new EncoderParameter[]
+            //        {
+            //                new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L - 45)
+            //        }
+            //    });
+            //}
             MemoryStream ms = new MemoryStream();
 
-            using (Bitmap bmp = creen)
-            {
-                bmp.Save(ms, ImageCodecInfo.GetImageEncoders()[1],
-                new EncoderParameters()
-                {
-                    Param = new EncoderParameter[]
-                    {
-                            new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 100L - 45)
-                    }
-                });
-            }
+            creen.Save(ms, ImageFormat.Png);
+
+            ms.Position = 0;
 
             return ms;
-
-
 
             //MemoryStream ms = new MemoryStream();
 
@@ -257,6 +258,12 @@ namespace Main_Shark
             int index = (int)(sender as Button).Tag;
             if (clients[index] != null)
             {
+                if (!IsWork[index])
+                {
+                    MessageBox.Show("Трансляция уже выключена", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
+                    return;
+                }
+
                 Lstpbx[index].Image = Properties.Resources.HaveSignal;
                 IsWork[index] = false;
             }
@@ -273,6 +280,11 @@ namespace Main_Shark
             int index = (int)(sender as Button).Tag;
             if (clients[index] != null)
             {
+                if(IsWork[index])
+                {
+                    MessageBox.Show("Трансляция уже запущена", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information); ;
+                    return;
+                }
                 IsWork[index] = true;
                 Lstpbx[index].Image = Properties.Resources.Translate;
             }
@@ -284,9 +296,19 @@ namespace Main_Shark
         /// </summary>
         private void GetUsers()
         {
-            IPAddress iP = IPAddress.Parse(IpAdress);
-            server = new TcpListener(iP, Port);
-            server.Start();
+            try
+            {
+                IPAddress iP = IPAddress.Parse(IpAdress);
+                server = new TcpListener(iP, Port);
+                server.Start();
+            }
+            catch 
+            {
+                MessageBox.Show("Возникла проблема запуска сервера, возможны не корректные настройки. Сбросить настройки?");
+                File.Delete(mainPath);
+                return;
+            }
+            
 
             while (true)
             {
@@ -365,7 +387,7 @@ namespace Main_Shark
                     }
 
                 }
-                Thread.Sleep(33);
+                Thread.Sleep(40);
             }
 
         }
@@ -406,7 +428,12 @@ namespace Main_Shark
             {
                 for (int i = 0; i < Count; i++)
                 {
-                    IsWork[i] = true;
+                    if(clients[i]!= null)
+                    {
+                        IsWork[i] = true;
+                        Lstpbx[i].Image = Properties.Resources.Translate;
+                    }
+                    
                 }
             }
         }
@@ -417,7 +444,11 @@ namespace Main_Shark
             {
                 for (int i = 0; i < Count; i++)
                 {
-                    IsWork[i] = false;
+                    if (clients[i] != null)
+                    {
+                        IsWork[i] = false;
+                        Lstpbx[i].Image = Properties.Resources.HaveSignal;
+                    }
                 }
             }
         }

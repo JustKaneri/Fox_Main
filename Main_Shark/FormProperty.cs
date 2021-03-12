@@ -19,10 +19,12 @@ namespace Main_Shark
             InitializeComponent();
         }
 
-        public string mainPath { get;private set;} = Path.GetDirectoryName(Application.ExecutablePath) + "/Main.key";
+        public string mainPath { get; private set; } = Path.GetDirectoryName(Application.ExecutablePath) + "/Main.key";
         private string foreginPath = Path.GetDirectoryName(Application.ExecutablePath) + "/Foregin.key";
 
         private int cnt = 0;
+        private bool IsEdit = false;
+        private int numDel = -1;
 
         private void FormProperty_Load(object sender, EventArgs e)
         {
@@ -41,41 +43,40 @@ namespace Main_Shark
 
         private void ReadOfFile()
         {
-            if(File.Exists(mainPath))
-            using (BinaryReader sw = new BinaryReader(File.Open(mainPath, FileMode.Open)))
-            {
-                TbxIp.Text = sw.ReadString();
-                TbxPort.Text = sw.ReadString();
-                int count = sw.ReadInt32();
-                for (int i = 0; i < count; i++)
+            if (File.Exists(mainPath))
+                using (BinaryReader sw = new BinaryReader(File.Open(mainPath, FileMode.Open)))
                 {
-                    DgvIp.Rows.Add(sw.ReadString());
+                    TbxIp.Text = sw.ReadString();
+                    TbxPort.Text = sw.ReadString();
+                    int count = sw.ReadInt32();
+                    for (int i = 0; i < count; i++)
+                    {
+                        string s = sw.ReadString();
+                        LstIp.Items.Add(s);
+                    }
                 }
-            }
         }
 
         private void FormProperty_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(TbxIp.Text == "" || !IsCorrectIp(TbxIp.Text))
+            if (TbxIp.Text != "" && TbxPort.Text != "" && IsEdit)
             {
-                MessageBox.Show("Некорректный ip адрес", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                e.Cancel = true;
-                return;
+                var res = MessageBox.Show("Сохранить настройик?", "Сохранение", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                if (res == DialogResult.OK)
+                {
+                    if (TbxIp.Text == "" || !IsCorrectIp(TbxIp.Text))
+                    {
+                        MessageBox.Show("Не корректный ip адрес.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        e.Cancel = true;
+                    }
+                    else
+                    {
+                        SaveFile();
+                    }
+
+                }
             }
 
-            try
-            {
-                int port = int.Parse(TbxPort.Text);
-            }
-            catch
-            {
-                MessageBox.Show("Некорректный порт", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                e.Cancel = true;
-                return;
-            }
-
-
-            SaveFile();
         }
 
         private void SaveFile()
@@ -85,10 +86,10 @@ namespace Main_Shark
             {
                 sw.Write(TbxIp.Text);
                 sw.Write(TbxPort.Text);
-                sw.Write(DgvIp.RowCount);
-                for (int i = 0; i < DgvIp.RowCount; i++)
+                sw.Write(LstIp.Items.Count);
+                for (int i = 0; i < LstIp.Items.Count; i++)
                 {
-                    sw.Write(DgvIp.Rows[i].Cells[0].Value.ToString());
+                    sw.Write(LstIp.Items[i].ToString());
                 }
             }
 
@@ -101,27 +102,46 @@ namespace Main_Shark
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            if(TbxIpUser.Text == "" || !IsCorrectIp(TbxIpUser.Text ) || cnt != 4)
+
+            if (TbxIpUser.Text == "" || !IsCorrectIp(TbxIpUser.Text))
             {
                 MessageBox.Show("Не корректный ip адрес.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            for (int i = 0; i < DgvIp.RowCount; i++)
+            for (int i = 0; i < LstIp.Items.Count; i++)
             {
-                if(DgvIp.Rows[i].Cells[0].Value.ToString() == TbxIpUser.Text)
+                if (LstIp.Items[i].ToString() == TbxIpUser.Text)
                 {
-                    MessageBox.Show("Данный ip адрес уже записан.","Внимание",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                    MessageBox.Show("Данный ip адрес уже записан.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
             }
 
-            DgvIp.Rows.Add(TbxIpUser.Text);
+            IsEdit = true;
+
+            if (BtnAdd.Text != "Добавить")
+            {
+                LstIp.Items.RemoveAt(numDel);
+                LstIp.Items.Insert(numDel, TbxIpUser.Text);
+                BtnDelUsers.Enabled = true;
+            }
+            else
+            {
+                LstIp.Items.Add(TbxIpUser.Text);
+            }
+
+            TbxIpUser.Text = "";
+
+         
         }
 
         private bool IsCorrectIp(string t)
         {
             string[] values = t.Split('.');
+
+            if (values.Length < 4)
+                return false;
 
             for (int i = 0; i < values.Length; i++)
             {
@@ -130,11 +150,11 @@ namespace Main_Shark
                 {
                     value = int.Parse(values[i]);
                 }
-                catch 
+                catch
                 {
                     return false;
                 }
-                
+
                 if (value > 255)
                 {
                     return false;
@@ -147,9 +167,9 @@ namespace Main_Shark
         private void TbxIpUser_KeyPress(object sender, KeyPressEventArgs e)
         {
             int z = 0;
-            for (int i = 0; i < TbxIpUser.Text.Length; i++)
+            for (int i = 0; i < ((TextBox)sender).Text.Length; i++)
             {
-                if (TbxIpUser.Text[i] == '.')
+                if (((TextBox)sender).Text[i] == '.')
                     z++;
             }
             cnt = z;
@@ -160,7 +180,7 @@ namespace Main_Shark
             if (Keys.Back == (Keys)e.KeyChar)
                 e.Handled = false;
 
-            if(e.KeyChar == '.' && cnt < 3)
+            if (e.KeyChar == '.' && cnt < 3)
             {
                 e.Handled = false;
                 cnt++;
@@ -169,7 +189,7 @@ namespace Main_Shark
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if(saveFileDialog1.ShowDialog() == DialogResult.OK)
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string name = saveFileDialog1.FileName;
 
@@ -186,12 +206,63 @@ namespace Main_Shark
         private void BtnEdit_Click(object sender, EventArgs e)
         {
             TbxIp.ReadOnly = TbxPort.ReadOnly = false;
+            IsEdit = true;
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
+            if (TbxIp.Text == "" || !IsCorrectIp(TbxIp.Text))
+            {
+                MessageBox.Show("Не корректный ip адрес.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             SaveFile();
             TbxIp.ReadOnly = TbxPort.ReadOnly = true;
+            IsEdit = false;
+
+            MessageBox.Show("Данные успешно сохранены", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnEditUser_Click(object sender, EventArgs e)
+        {
+
+            if(BtnEditUser.Text != "Отмена")
+            {
+                numDel = LstIp.SelectedIndex;
+                if(numDel>-1)
+                {
+                    TbxIpUser.Text = LstIp.Items[numDel].ToString();
+                    BtnEditUser.Text = "Отмена";
+                    BtnAdd.Text = "Сохранить";
+                    BtnDelUsers.Enabled = false;
+                }
+            }
+            else
+            {
+                TbxIpUser.Text = "";
+                BtnEditUser.Text = "Редактировать";
+                BtnAdd.Text = "Добавить";
+                BtnDelUsers.Enabled = true;
+
+            }
+            
+        }
+
+        private void TbxIp_TextChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void BtnDelUsers_Click(object sender, EventArgs e)
+        {
+            if (LstIp.SelectedIndex < 0)
+                return;
+
+            var a = MessageBox.Show("Удалить выбранный Ip адрес?", "Удаление", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if(a == DialogResult.Yes)
+            {
+                LstIp.Items.RemoveAt(LstIp.SelectedIndex);
+            }
         }
     }
 }

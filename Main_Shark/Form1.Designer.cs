@@ -70,6 +70,7 @@
             // 
             // BtnOnAll
             // 
+            this.BtnOnAll.Image = global::Main_Shark.Properties.Resources.Start;
             this.BtnOnAll.Name = "BtnOnAll";
             this.BtnOnAll.Size = new System.Drawing.Size(476, 28);
             this.BtnOnAll.Text = "Включить трансляцию на всех компьютерах";
@@ -77,6 +78,7 @@
             // 
             // BtnOffAll
             // 
+            this.BtnOffAll.Image = global::Main_Shark.Properties.Resources.Pause;
             this.BtnOffAll.Name = "BtnOffAll";
             this.BtnOffAll.Size = new System.Drawing.Size(476, 28);
             this.BtnOffAll.Text = "Выключить трансляцию на всех компьютерах";
@@ -93,8 +95,9 @@
             // 
             // TsmProperty
             // 
+            this.TsmProperty.Image = ((System.Drawing.Image)(resources.GetObject("TsmProperty.Image")));
             this.TsmProperty.Name = "TsmProperty";
-            this.TsmProperty.Size = new System.Drawing.Size(177, 28);
+            this.TsmProperty.Size = new System.Drawing.Size(216, 28);
             this.TsmProperty.Text = "Настройки";
             this.TsmProperty.Click += new System.EventHandler(this.TsmProperty_Click);
             // 
